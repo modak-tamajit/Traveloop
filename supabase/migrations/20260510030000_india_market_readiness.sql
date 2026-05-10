@@ -11,29 +11,29 @@ create index if not exists activities_city_category_rating_idx
 with seed_cities(name, region, country, country_code, lat, lng, timezone, image_url) as (
   values
     ('Agra', 'Uttar Pradesh', 'India', 'IN', 27.176670, 78.008070, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=900&q=80'),
-    ('Ahmedabad', 'Gujarat', 'India', 'IN', 23.022505, 72.571362, 'Asia/Kolkata', null),
-    ('Amritsar', 'Punjab', 'India', 'IN', 31.634000, 74.872300, 'Asia/Kolkata', null),
-    ('Darjeeling', 'West Bengal', 'India', 'IN', 27.041000, 88.266300, 'Asia/Kolkata', null),
-    ('Gangtok', 'Sikkim', 'India', 'IN', 27.331400, 88.613800, 'Asia/Kolkata', null),
-    ('Guwahati', 'Assam', 'India', 'IN', 26.144500, 91.736200, 'Asia/Kolkata', null),
-    ('Hampi', 'Karnataka', 'India', 'IN', 15.335000, 76.460000, 'Asia/Kolkata', null),
-    ('Hyderabad', 'Telangana', 'India', 'IN', 17.385000, 78.486700, 'Asia/Kolkata', null),
-    ('Jaisalmer', 'Rajasthan', 'India', 'IN', 26.915700, 70.908300, 'Asia/Kolkata', null),
-    ('Jodhpur', 'Rajasthan', 'India', 'IN', 26.238900, 73.024300, 'Asia/Kolkata', null),
-    ('Kolkata', 'West Bengal', 'India', 'IN', 22.572600, 88.363900, 'Asia/Kolkata', null),
-    ('Leh', 'Ladakh', 'India', 'IN', 34.152600, 77.577100, 'Asia/Kolkata', null),
-    ('Lucknow', 'Uttar Pradesh', 'India', 'IN', 26.846700, 80.946200, 'Asia/Kolkata', null),
-    ('Madurai', 'Tamil Nadu', 'India', 'IN', 9.925200, 78.119800, 'Asia/Kolkata', null),
-    ('Manali', 'Himachal Pradesh', 'India', 'IN', 32.239600, 77.188700, 'Asia/Kolkata', null),
+    ('Ahmedabad', 'Gujarat', 'India', 'IN', 23.022505, 72.571362, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1653489218319-7f99c0c2d6e7?auto=format&fit=crop&w=900&q=80'),
+    ('Amritsar', 'Punjab', 'India', 'IN', 31.634000, 74.872300, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1609766418204-94aae0ecfdfc?auto=format&fit=crop&w=900&q=80'),
+    ('Darjeeling', 'West Bengal', 'India', 'IN', 27.041000, 88.266300, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=900&q=80'),
+    ('Gangtok', 'Sikkim', 'India', 'IN', 27.331400, 88.613800, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1622735341889-1c5c0fb54de2?auto=format&fit=crop&w=900&q=80'),
+    ('Guwahati', 'Assam', 'India', 'IN', 26.144500, 91.736200, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=900&q=80'),
+    ('Hampi', 'Karnataka', 'India', 'IN', 15.335000, 76.460000, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1590736969955-71cc94901144?auto=format&fit=crop&w=900&q=80'),
+    ('Hyderabad', 'Telangana', 'India', 'IN', 17.385000, 78.486700, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1626516011853-9e82d693f0d9?auto=format&fit=crop&w=900&q=80'),
+    ('Jaisalmer', 'Rajasthan', 'India', 'IN', 26.915700, 70.908300, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=900&q=80'),
+    ('Jodhpur', 'Rajasthan', 'India', 'IN', 26.238900, 73.024300, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=900&q=80'),
+    ('Kolkata', 'West Bengal', 'India', 'IN', 22.572600, 88.363900, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1558431382-27e303142255?auto=format&fit=crop&w=900&q=80'),
+    ('Leh', 'Ladakh', 'India', 'IN', 34.152600, 77.577100, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80'),
+    ('Lucknow', 'Uttar Pradesh', 'India', 'IN', 26.846700, 80.946200, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1625735162867-2e68a8bb4c3c?auto=format&fit=crop&w=900&q=80'),
+    ('Madurai', 'Tamil Nadu', 'India', 'IN', 9.925200, 78.119800, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=900&q=80'),
+    ('Manali', 'Himachal Pradesh', 'India', 'IN', 32.239600, 77.188700, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1585936369609-1b0a54a1d629?auto=format&fit=crop&w=900&q=80'),
     ('Munnar', 'Kerala', 'India', 'IN', 10.088900, 77.059500, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=900&q=80'),
-    ('Mysuru', 'Karnataka', 'India', 'IN', 12.295800, 76.639400, 'Asia/Kolkata', null),
-    ('Ooty', 'Tamil Nadu', 'India', 'IN', 11.410200, 76.695000, 'Asia/Kolkata', null),
-    ('Puducherry', 'Puducherry', 'India', 'IN', 11.941600, 79.808300, 'Asia/Kolkata', null),
-    ('Pune', 'Maharashtra', 'India', 'IN', 18.520400, 73.856700, 'Asia/Kolkata', null),
-    ('Rishikesh', 'Uttarakhand', 'India', 'IN', 30.086900, 78.267600, 'Asia/Kolkata', null),
-    ('Shillong', 'Meghalaya', 'India', 'IN', 25.578800, 91.893300, 'Asia/Kolkata', null),
-    ('Srinagar', 'Jammu and Kashmir', 'India', 'IN', 34.083700, 74.797300, 'Asia/Kolkata', null),
-    ('Thiruvananthapuram', 'Kerala', 'India', 'IN', 8.524100, 76.936600, 'Asia/Kolkata', null)
+    ('Mysuru', 'Karnataka', 'India', 'IN', 12.295800, 76.639400, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1600093112174-b1a565a8e9e5?auto=format&fit=crop&w=900&q=80'),
+    ('Ooty', 'Tamil Nadu', 'India', 'IN', 11.410200, 76.695000, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1580889010969-1b2b3b6b9b8b?auto=format&fit=crop&w=900&q=80'),
+    ('Puducherry', 'Puducherry', 'India', 'IN', 11.941600, 79.808300, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?auto=format&fit=crop&w=900&q=80'),
+    ('Pune', 'Maharashtra', 'India', 'IN', 18.520400, 73.856700, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1567604130959-7e5e5e8e8e8e?auto=format&fit=crop&w=900&q=80'),
+    ('Rishikesh', 'Uttarakhand', 'India', 'IN', 30.086900, 78.267600, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=900&q=80'),
+    ('Shillong', 'Meghalaya', 'India', 'IN', 25.578800, 91.893300, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1598394848012-4a4fb4e4e4e4?auto=format&fit=crop&w=900&q=80'),
+    ('Srinagar', 'Jammu and Kashmir', 'India', 'IN', 34.083700, 74.797300, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1566837497312-7be7830ae9b2?auto=format&fit=crop&w=900&q=80'),
+    ('Thiruvananthapuram', 'Kerala', 'India', 'IN', 8.524100, 76.936600, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1593693411515-c20261bcad6e?auto=format&fit=crop&w=900&q=80')
 )
 insert into public.cities (name, region, country, country_code, lat, lng, timezone, image_url)
 select s.name, s.region, s.country, s.country_code, s.lat, s.lng, s.timezone, s.image_url
@@ -45,6 +45,15 @@ where not exists (
     and coalesce(lower(c.region), '') = coalesce(lower(s.region), '')
     and lower(c.country) = lower(s.country)
 );
+
+-- Patch image_url for any previously seeded cities that still have null
+update public.cities c
+set image_url = s.image_url
+from seed_cities s
+where lower(c.name) = lower(s.name)
+  and coalesce(lower(c.region), '') = coalesce(lower(s.region), '')
+  and lower(c.country) = lower(s.country)
+  and (c.image_url is null or c.image_url = '');
 
 with seed_activities(
   city_name,

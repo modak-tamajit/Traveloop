@@ -93,8 +93,8 @@ type TripWritePayload = {
 }
 
 const INDIA_COUNTRY_CODE = "IN"
-const defaultCityImage = "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=900&q=80"
-const defaultActivityImage = "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=900&q=80"
+const defaultCityImage = "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=900&q=80"
+const defaultActivityImage = "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=900&q=80"
 const tripSelectColumns =
   "id,user_id,trip_number,origin,destination,travel_mode,date,time,title,start_date,end_date,primary_city_id,notes,travelers,total_expenses,status,is_public,share_id,share_enabled_at,share_expires_at,public_show_overview,public_show_itinerary,public_show_expenses,public_show_packing,public_show_journal,metadata,lock_version,created_at,updated_at"
 

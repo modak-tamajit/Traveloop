@@ -4,14 +4,22 @@
 
 with seed_cities(name, region, country, country_code, lat, lng, timezone, image_url) as (
   values
-    ('Mumbai', 'Maharashtra', 'India', 'IN', 19.076000, 72.877700, 'Asia/Kolkata', null),
-    ('Delhi', 'Delhi', 'India', 'IN', 28.613900, 77.209000, 'Asia/Kolkata', null),
-    ('Jaipur', 'Rajasthan', 'India', 'IN', 26.912400, 75.787300, 'Asia/Kolkata', null),
-    ('Goa', 'Goa', 'India', 'IN', 15.299300, 74.124000, 'Asia/Kolkata', null),
-    ('Kochi', 'Kerala', 'India', 'IN', 9.931200, 76.267300, 'Asia/Kolkata', null),
-    ('Udaipur', 'Rajasthan', 'India', 'IN', 24.585400, 73.712500, 'Asia/Kolkata', null),
-    ('Varanasi', 'Uttar Pradesh', 'India', 'IN', 25.317600, 82.973900, 'Asia/Kolkata', null),
-    ('Bengaluru', 'Karnataka', 'India', 'IN', 12.971600, 77.594600, 'Asia/Kolkata', null)
+    ('Mumbai', 'Maharashtra', 'India', 'IN', 19.076000, 72.877700, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1529253355930-ddbe423a2ac7?auto=format&fit=crop&w=900&q=80'),
+    ('Delhi', 'Delhi', 'India', 'IN', 28.613900, 77.209000, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=900&q=80'),
+    ('Jaipur', 'Rajasthan', 'India', 'IN', 26.912400, 75.787300, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=900&q=80'),
+    ('Goa', 'Goa', 'India', 'IN', 15.299300, 74.124000, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=900&q=80'),
+    ('Kochi', 'Kerala', 'India', 'IN', 9.931200, 76.267300, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1593693411515-c20261bcad6e?auto=format&fit=crop&w=900&q=80'),
+    ('Udaipur', 'Rajasthan', 'India', 'IN', 24.585400, 73.712500, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1615836245337-f5b9b2303f10?auto=format&fit=crop&w=900&q=80'),
+    ('Varanasi', 'Uttar Pradesh', 'India', 'IN', 25.317600, 82.973900, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1561361058-c24cecae35ca?auto=format&fit=crop&w=900&q=80'),
+    ('Bengaluru', 'Karnataka', 'India', 'IN', 12.971600, 77.594600, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=900&q=80'),
+    ('Guwahati', 'Assam', 'India', 'IN', 26.144500, 91.736200, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1626015365107-338ee48b8022?auto=format&fit=crop&w=900&q=80'),
+    ('Hampi', 'Karnataka', 'India', 'IN', 15.335000, 76.462000, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1590736969955-71cc94901144?auto=format&fit=crop&w=900&q=80'),
+    ('Hyderabad', 'Telangana', 'India', 'IN', 17.385000, 78.486700, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1626516011853-9e82d693f0d9?auto=format&fit=crop&w=900&q=80'),
+    ('Agra', 'Uttar Pradesh', 'India', 'IN', 27.176700, 78.008000, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=900&q=80'),
+    ('Kolkata', 'West Bengal', 'India', 'IN', 22.572600, 88.363900, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1558431382-27e303142255?auto=format&fit=crop&w=900&q=80'),
+    ('Chennai', 'Tamil Nadu', 'India', 'IN', 13.082700, 80.270700, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=900&q=80'),
+    ('Rishikesh', 'Uttarakhand', 'India', 'IN', 30.086900, 78.267800, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80'),
+    ('Amritsar', 'Punjab', 'India', 'IN', 31.634000, 74.872300, 'Asia/Kolkata', 'https://images.unsplash.com/photo-1609766418204-94aae0ecfdfc?auto=format&fit=crop&w=900&q=80')
 )
 insert into public.cities (name, region, country, country_code, lat, lng, timezone, image_url)
 select s.name, s.region, s.country, s.country_code, s.lat, s.lng, s.timezone, s.image_url
@@ -23,6 +31,15 @@ where not exists (
     and coalesce(lower(c.region), '') = coalesce(lower(s.region), '')
     and lower(c.country) = lower(s.country)
 );
+
+-- Update image_url for existing cities that have null images
+update public.cities c
+set image_url = s.image_url
+from seed_cities s
+where lower(c.name) = lower(s.name)
+  and coalesce(lower(c.region), '') = coalesce(lower(s.region), '')
+  and lower(c.country) = lower(s.country)
+  and c.image_url is null;
 
 with seed_activities(
   city_name,
