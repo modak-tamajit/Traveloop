@@ -1,7 +1,94 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-:root{--background:218 38% 98%;--foreground:222 44% 14%;--card:0 0% 100%;--muted:216 30% 94%;--border:216 22% 86%;--primary:213 82% 24%;--primary-foreground:0 0% 100%;--accent:24 94% 56%;--accent-foreground:0 0% 100%;--gold:42 84% 51%;--saffron:31 96% 55%}
-.dark{--background:222 48% 8%;--foreground:210 38% 96%;--card:221 42% 12%;--muted:220 30% 18%;--border:220 25% 24%;--primary:211 86% 42%;--primary-foreground:0 0% 100%;--accent:25 94% 58%;--accent-foreground:0 0% 100%;--gold:43 82% 56%;--saffron:31 92% 58%}
-body{margin:0;background:hsl(var(--background));color:hsl(var(--foreground));font-family:Inter,ui-sans-serif,system-ui}
-*{box-sizing:border-box}
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+:root {
+  --background: 42 36% 97%;
+  --foreground: 222 39% 13%;
+  --card: 0 0% 100%;
+  --muted: 39 33% 91%;
+  --border: 37 20% 82%;
+  --primary: 178 72% 22%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 18 87% 55%;
+  --accent-foreground: 0 0% 100%;
+  --gold: 42 82% 52%;
+  --saffron: 31 93% 56%;
+}
+
+.dark {
+  --background: 220 34% 9%;
+  --foreground: 42 30% 94%;
+  --card: 219 30% 13%;
+  --muted: 217 22% 19%;
+  --border: 216 18% 25%;
+  --primary: 176 62% 41%;
+  --primary-foreground: 222 39% 10%;
+  --accent: 21 90% 60%;
+  --accent-foreground: 222 39% 10%;
+  --gold: 43 84% 58%;
+  --saffron: 31 92% 59%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted) / 0.45) 42rem),
+    hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: hsl(var(--gold) / 0.28);
+}
+
+@layer utilities {
+  .page-enter {
+    animation: page-enter 220ms ease-out both;
+  }
+
+  .glass-panel {
+    background: hsl(var(--card) / 0.82);
+    backdrop-filter: blur(18px);
+  }
+
+  .travel-focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+
+  .travel-focus:focus-visible {
+    box-shadow:
+      0 0 0 2px hsl(var(--background)),
+      0 0 0 4px hsl(var(--gold));
+  }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -6,7 +6,9 @@ export interface JsonObject {
 }
 
 export type ProfileRole = 'user' | 'admin';
-export type TripStatus = 'planning' | 'in_progress' | 'completed';
+export type LegacyTripStatus = 'planning' | 'in_progress' | 'completed';
+export type AppTripStatus = 'draft' | 'planned' | 'active' | 'completed' | 'archived';
+export type TripStatus = LegacyTripStatus | AppTripStatus;
 export type ExpenseCategory = 'transport' | 'food' | 'accommodation' | 'entertainment' | 'other';
 export type BookingStatus = 'idea' | 'planned' | 'booked' | 'cancelled' | 'completed';
 
@@ -21,6 +23,8 @@ export interface ProfileRow {
   bio: string | null;
   profile_picture_url: string | null;
   role: ProfileRole;
+  metadata: JsonObject;
+  lock_version: number;
   created_at: string;
   updated_at: string;
 }
@@ -36,6 +40,8 @@ export interface CityRow {
   timezone: string | null;
   image_url: string | null;
   search_text: string | null;
+  metadata: JsonObject;
+  lock_version: number;
   created_at: string;
   updated_at: string;
 }
@@ -66,6 +72,8 @@ export interface TripRow {
   public_show_expenses: boolean;
   public_show_packing: boolean;
   public_show_journal: boolean;
+  metadata: JsonObject;
+  lock_version: number;
   created_at: string;
   updated_at: string;
 }
@@ -93,6 +101,8 @@ export interface ActivityRow {
   created_by: string | null;
   is_seed: boolean;
   search_text: string | null;
+  metadata: JsonObject;
+  lock_version: number;
   created_at: string;
   updated_at: string;
 }
@@ -106,6 +116,8 @@ export interface ItineraryDayRow {
   title: string | null;
   notes: string | null;
   sort_order: number;
+  metadata: JsonObject;
+  lock_version: number;
   created_at: string;
   updated_at: string;
 }
@@ -126,6 +138,8 @@ export interface ItineraryItemRow {
   booking_status: BookingStatus;
   notes: string | null;
   sort_order: number;
+  metadata: JsonObject;
+  lock_version: number;
   created_at: string;
   updated_at: string;
 }
@@ -140,6 +154,8 @@ export interface ExpenseRow {
   category: ExpenseCategory;
   date: string;
   time: string;
+  metadata: JsonObject;
+  lock_version: number;
   created_at: string;
   updated_at: string;
 }
@@ -153,6 +169,8 @@ export interface PackingItemRow {
   is_packed: boolean;
   notes: string | null;
   sort_order: number;
+  metadata: JsonObject;
+  lock_version: number;
   created_at: string;
   updated_at: string;
 }
@@ -167,8 +185,37 @@ export interface JournalEntryRow {
   entry_date: string;
   mood: string | null;
   is_public: boolean;
+  metadata: JsonObject;
+  lock_version: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface TripActivityEventRow {
+  id: string;
+  trip_id: string | null;
+  actor_user_id: string | null;
+  event_type: string;
+  entity_table: string | null;
+  entity_id: string | null;
+  metadata: JsonObject;
+  created_at: string;
+}
+
+export interface PublicShareAccessEventRow {
+  id: string;
+  trip_id: string | null;
+  share_id: string;
+  accessed_at: string;
+  metadata: JsonObject;
+}
+
+export interface SeedRunRow {
+  id: string;
+  seed_name: string;
+  checksum: string | null;
+  applied_at: string;
+  metadata: JsonObject;
 }
 
 export const supabaseRpcNames = {
@@ -177,6 +224,7 @@ export const supabaseRpcNames = {
   searchActivities: 'search_activities',
   loadPublicItinerary: 'load_public_itinerary',
   getAdminAnalytics: 'get_admin_analytics',
+  recordTripActivityEvent: 'record_trip_activity_event',
 } as const;
 
 export type SupabaseRpcName = (typeof supabaseRpcNames)[keyof typeof supabaseRpcNames];
@@ -340,16 +388,26 @@ export interface AdminAnalyticsParams {
   p_to_date?: string | null;
 }
 
+export interface RecordTripActivityEventParams {
+  p_trip_id: string;
+  p_event_type: string;
+  p_entity_table?: string | null;
+  p_entity_id?: string | null;
+  p_metadata?: JsonObject;
+}
+
 export interface AdminAnalyticsTotals {
   users: number;
   trips: number;
   public_shares: number;
+  public_share_views: number;
   expenses_amount: number;
   cities: number;
   activities: number;
   itinerary_items: number;
   packing_items: number;
   journal_entries: number;
+  trip_activity_events: number;
 }
 
 export interface AdminExpenseCategoryStats {
@@ -375,4 +433,5 @@ export interface AdminAnalyticsPayload {
   expenses_by_category: Partial<Record<ExpenseCategory, AdminExpenseCategoryStats>>;
   top_cities: AdminTopCity[];
   daily_trip_creations: AdminDailyTripCreation[];
+  daily_public_share_views: AdminDailyTripCreation[];
 }
