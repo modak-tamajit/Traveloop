@@ -11,7 +11,6 @@ This contract keeps the existing Safarnama backend surface intact for `profiles`
 - `trips` keeps `trip_number`, `origin`, `destination`, `travel_mode`, legacy `date`, legacy `time`, `notes`, `travelers`, `total_expenses`, `status`, and timestamps.
 - `expenses` keeps `trip_id`, `user_id`, `description`, `amount`, `category`, legacy `date`, legacy `time`, and timestamps.
 - Existing `generate_trip_number(user_uuid uuid)` remains available for the current Safarnama service code.
-- Trip status keeps legacy values (`planning`, `in_progress`, `completed`) and also accepts the pulled frontend shell values (`draft`, `planned`, `active`, `archived`).
 
 ## Tables
 
@@ -29,8 +28,6 @@ Owner table keyed by `user_id`.
 - `bio text`
 - `profile_picture_url text`
 - `role text check ('user', 'admin') default 'user'`
-- `metadata jsonb`
-- `lock_version integer`
 - `created_at timestamptz`
 - `updated_at timestamptz`
 
@@ -50,8 +47,6 @@ Public searchable catalog.
 - `timezone text`
 - `image_url text`
 - `search_text text`
-- `metadata jsonb`
-- `lock_version integer`
 - `created_at timestamptz`
 - `updated_at timestamptz`
 
@@ -63,8 +58,6 @@ Owner table and parent for all trip-owned features.
 - New columns: `title`, `start_date`, `end_date`, `primary_city_id`
 - Sharing columns: `is_public`, `share_id`, `share_enabled_at`, `share_expires_at`
 - Visibility toggles: `public_show_overview`, `public_show_itinerary`, `public_show_expenses`, `public_show_packing`, `public_show_journal`
-- Valid `status` values: `planning`, `in_progress`, `completed`, `draft`, `planned`, `active`, `archived`
-- Production columns: `metadata jsonb`, `lock_version integer`
 
 Frontend routes use `share_id` for `/share/:shareId`.
 
@@ -87,8 +80,6 @@ Searchable activity catalog with seed and user-created rows.
 - `created_by uuid references auth.users(id) on delete set null`
 - `is_seed boolean`
 - `search_text text`
-- `metadata jsonb`
-- `lock_version integer`
 - timestamps
 
 Seed activities are visible to everyone. User-created activities are visible only to their creator unless exposed through a public itinerary RPC payload.
@@ -105,8 +96,6 @@ Trip-owned day records.
 - `title text`
 - `notes text`
 - `sort_order integer`
-- `metadata jsonb`
-- `lock_version integer`
 - timestamps
 
 Unique: `(trip_id, day_number)`.
@@ -130,8 +119,6 @@ Trip-owned scheduled items.
 - `booking_status text`: `idea`, `planned`, `booked`, `cancelled`, `completed`
 - `notes text`
 - `sort_order integer`
-- `metadata jsonb`
-- `lock_version integer`
 - timestamps
 
 ### expenses
@@ -140,7 +127,6 @@ Trip-owned expenses remain compatible and now may link to itinerary items.
 
 - Existing columns remain unchanged.
 - New optional link: `itinerary_item_id uuid references itinerary_items(id) on delete set null`
-- Production columns: `metadata jsonb`, `lock_version integer`
 
 The database derives `expenses.user_id` from the parent trip to avoid cross-owner writes.
 
@@ -156,8 +142,6 @@ Trip-owned checklist.
 - `is_packed boolean`
 - `notes text`
 - `sort_order integer`
-- `metadata jsonb`
-- `lock_version integer`
 - timestamps
 
 ### journal_entries
@@ -173,8 +157,6 @@ Trip-owned journal records.
 - `entry_date date`
 - `mood text`
 - `is_public boolean`
-- `metadata jsonb`
-- `lock_version integer`
 - timestamps
 
 `day_id` and `itinerary_item_id` must belong to the same trip.
@@ -187,9 +169,6 @@ Trip-owned journal records.
 - `itinerary_days`, `itinerary_items`, `packing_items`, `journal_entries`: authenticated users can read/write only child records for their own trips.
 - `cities`: readable by anonymous and authenticated users; writes require admin.
 - `activities`: seed rows are public readable, own rows are creator readable/writeable, admin can manage all.
-- `trip_activity_events`: trip owners and admins can read; clients write through `record_trip_activity_event`.
-- `public_share_access_events`: admin-readable operational analytics only.
-- `seed_runs`: admin-readable seed history only.
 - Public sharing does not rely on direct table reads. `/share/:shareId` must use `load_public_itinerary`.
 - Admin analytics must use `get_admin_analytics`; direct profile or private expense access is not exposed to frontend clients.
 
@@ -266,23 +245,14 @@ Returns: `jsonb`
 Requires `profiles.role = 'admin'` for the authenticated user. Payload includes aggregate-only metrics:
 
 - totals for users, trips, public shares, expenses amount, cities, activities, itinerary items, packing items, journal entries
-- operational totals for public share views and trip activity events
 - trips by status
 - expenses by category
 - top cities
 - daily trip creations
-- daily public share views
-
-### record_trip_activity_event
-
-Name: `record_trip_activity_event(p_trip_id uuid, p_event_type text, p_entity_table text default null, p_entity_id uuid default null, p_metadata jsonb default '{}'::jsonb)`
-Returns: `uuid`
-
-Records owner/admin-authorized operational events for future audit, import/export, collaboration, and support workflows.
 
 ## Seed Data Contract
 
-Seed files should target only `cities` and seed `activities`. The current seed entrypoint is `supabase/seed.sql`.
+Seed files should target only `cities` and seed `activities`.
 
 - Cities require: `name`, `country`; recommended: `region`, `country_code`, `lat`, `lng`, `timezone`, `image_url`.
 - Seed activities require: `name`, `category`, `source`, `is_seed = true`; recommended: `city_id`, `description`, `duration_minutes`, `estimated_cost`, `currency`, `rating`, `location`, `tags`.
