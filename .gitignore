@@ -1,0 +1,56 @@
+# Environment secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Dependencies
+node_modules/
+.pnpm-store/
+.yarn/
+.bun/
+
+# Build output
+dist/
+build/
+coverage/
+.vite/
+.cache/
+.tmp/
+tmp/
+temp/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun-debug.log*
+
+# Supabase local state
+.supabase/
+supabase/.branches/
+supabase/.temp/
+supabase/.env
+supabase/.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor and workspace files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Mobile/native generated output
+android/.gradle/
+android/app/build/
+ios/App/Pods/
+ios/App/build/
+ios/App/DerivedData/
