@@ -397,14 +397,6 @@ Special thanks to:
 - Coffee
 - Stack Overflow answers written in 2019 by exhausted strangers carrying the software industry on their backs
 
----
-
-# 📬 Contact
-
-For suggestions or collaboration:
-
-- GitHub: https://github.com/your-username
-- Email: your-email@example.com
 
 ---
 
