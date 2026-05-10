@@ -2,22 +2,27 @@ import {CheckSquare, Plus, RotateCcw, Share2} from "lucide-react"
 import {useParams} from "react-router-dom"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent} from "@/components/ui/card"
+import {EmptyState} from "@/components/ui/empty-state"
 import {Progress} from "@/components/ui/progress"
 import {SearchToolbar} from "@/components/travel/search-toolbar"
 import {PageHeader, PageShell} from "@/components/layout/page-shell"
 import {useSupabaseQuery} from "@/hooks/use-supabase-query"
 import {TripTabs} from "@/pages/trip-detail"
-import {demoTripBundle, getTripBundle} from "@/services/traveloop-api"
+import {emptyTripBundle, getTripBundle} from "@/services/traveloop-api"
 
 export function TripChecklistPage() {
   const {id} = useParams()
-  const {data} = useSupabaseQuery(`trip-checklist:${id ?? "demo"}`, demoTripBundle, () => getTripBundle(id))
+  const {data} = useSupabaseQuery(`trip-checklist:${id ?? "missing"}`, emptyTripBundle, () => getTripBundle(id))
   const {packingGroups, trip} = data
   const packed = packingGroups.flatMap((group) => group.items).filter((item) => item.packed).length
   const total = packingGroups.flatMap((group) => group.items).length
 
   return (
     <PageShell>
+      {data.notFound ? (
+        <EmptyState description="This trip is missing or you do not have access to it." title="Trip not found" />
+      ) : (
+        <>
       <PageHeader
         actions={
           <Button>
@@ -42,10 +47,10 @@ export function TripChecklistPage() {
                   {packed}/{total} packed
                 </span>
               </div>
-              <Progress value={(packed / total) * 100} />
+              <Progress value={total ? (packed / total) * 100 : 0} />
             </div>
 
-            <div className="space-y-5">
+            {packingGroups.length ? <div className="space-y-5">
               {packingGroups.map((group) => {
                 const groupPacked = group.items.filter((item) => item.packed).length
                 return (
@@ -71,7 +76,9 @@ export function TripChecklistPage() {
                   </section>
                 )
               })}
-            </div>
+            </div> : (
+              <EmptyState description="Add packing items or apply a trip template to track preparation progress." title="No packing items yet" />
+            )}
 
             <div className="mt-5 flex flex-wrap gap-2">
               <Button variant="outline">
@@ -90,6 +97,8 @@ export function TripChecklistPage() {
           </CardContent>
         </Card>
       </div>
+      </>
+      )}
     </PageShell>
   )
 }

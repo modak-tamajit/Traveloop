@@ -9,12 +9,12 @@ import {PageHeader, PageShell} from "@/components/layout/page-shell"
 import {TripCard} from "@/components/travel/trip-card"
 import {useSupabaseQuery} from "@/hooks/use-supabase-query"
 import {useAuth} from "@/providers/auth-provider"
-import {demoDashboard, listTrips} from "@/services/traveloop-api"
+import {emptyDashboard, listTrips} from "@/services/traveloop-api"
 
 export function ProfilePage() {
   const {profile, updateProfile} = useAuth()
   const {notify} = useToast()
-  const {data: trips} = useSupabaseQuery("profile-trips", demoDashboard.trips, async () => (await listTrips()).data)
+  const {data: trips} = useSupabaseQuery("profile-trips", emptyDashboard.trips, async () => (await listTrips()).data)
   const [isSaving, setIsSaving] = useState(false)
 
   const handleSave = async (event: FormEvent<HTMLFormElement>) => {

@@ -2,16 +2,17 @@ import {ArrowLeft, Download, FileText, IndianRupee, WalletCards} from "lucide-re
 import {Link, useParams} from "react-router-dom"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent} from "@/components/ui/card"
+import {EmptyState} from "@/components/ui/empty-state"
 import {PageHeader, PageShell} from "@/components/layout/page-shell"
 import {ExpenseCard} from "@/components/travel/expense-card"
 import {SearchToolbar} from "@/components/travel/search-toolbar"
 import {useSupabaseQuery} from "@/hooks/use-supabase-query"
 import {TripTabs} from "@/pages/trip-detail"
-import {demoTripBundle, getTripBundle} from "@/services/traveloop-api"
+import {emptyTripBundle, getTripBundle} from "@/services/traveloop-api"
 
 export function TripExpensesPage() {
   const {id} = useParams()
-  const {data} = useSupabaseQuery(`trip-expenses:${id ?? "demo"}`, demoTripBundle, () => getTripBundle(id))
+  const {data} = useSupabaseQuery(`trip-expenses:${id ?? "missing"}`, emptyTripBundle, () => getTripBundle(id))
   const {expenseLines, trip} = data
   const subtotal = expenseLines.reduce((sum, line) => sum + line.amount, 0)
   const tax = 1050
@@ -20,6 +21,10 @@ export function TripExpensesPage() {
 
   return (
     <PageShell>
+      {data.notFound ? (
+        <EmptyState description="This trip is missing or you do not have access to it." title="Trip not found" />
+      ) : (
+        <>
       <PageHeader
         actions={
           <Button variant="outline">
@@ -54,7 +59,7 @@ export function TripExpensesPage() {
                   <p className="mt-2 text-sm text-foreground/60">
                     {trip.startDate} to {trip.endDate} · {trip.destination}
                   </p>
-                  <p className="mt-2 text-sm text-foreground/60">Created by Aarav</p>
+                  <p className="mt-2 text-sm text-foreground/60">Private account trip</p>
                 </div>
                 <div className="text-sm text-foreground/70">
                   <p>
@@ -94,6 +99,11 @@ export function TripExpensesPage() {
                     ))}
                   </tbody>
                 </table>
+                {!expenseLines.length ? (
+                  <div className="py-8">
+                    <EmptyState description="Add expenses to this trip to generate a live invoice." title="No expenses recorded" />
+                  </div>
+                ) : null}
               </div>
               <div className="ml-auto mt-5 max-w-xs space-y-2 text-sm">
                 <Row label="Subtotal" value={subtotal} />
@@ -127,6 +137,8 @@ export function TripExpensesPage() {
           </aside>
         </div>
       </div>
+      </>
+      )}
     </PageShell>
   )
 }

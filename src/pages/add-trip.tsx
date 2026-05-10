@@ -14,8 +14,8 @@ import {useSupabaseQuery} from "@/hooks/use-supabase-query"
 import {
   createTrip,
   deleteTrip,
-  demoCatalog,
-  demoTripBundle,
+  emptyCatalog,
+  emptyTripBundle,
   getCatalogData,
   getTripBundle,
   updateTrip,
@@ -31,9 +31,9 @@ export function TripForm({title, eyebrow, action}: {title: string; eyebrow: stri
   const isEditing = Boolean(tripId)
   const {notify} = useToast()
   const navigate = useNavigate()
-  const {data: catalog} = useSupabaseQuery("trip-form-catalog", demoCatalog, getCatalogData)
-  const {data: editBundle} = useSupabaseQuery(`trip-form:${tripId ?? "new"}`, demoTripBundle, () =>
-    tripId ? getTripBundle(tripId) : Promise.resolve(demoTripBundle),
+  const {data: catalog} = useSupabaseQuery("trip-form-catalog", emptyCatalog, getCatalogData)
+  const {data: editBundle} = useSupabaseQuery(`trip-form:${tripId ?? "new"}`, emptyTripBundle, () =>
+    tripId ? getTripBundle(tripId) : Promise.resolve(emptyTripBundle),
   )
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)

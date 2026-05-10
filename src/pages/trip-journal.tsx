@@ -2,20 +2,25 @@ import {Edit3, PenLine, Plus, Trash2} from "lucide-react"
 import {useParams} from "react-router-dom"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent} from "@/components/ui/card"
+import {EmptyState} from "@/components/ui/empty-state"
 import {SegmentedTabs, TabButton} from "@/components/ui/tabs"
 import {SearchToolbar} from "@/components/travel/search-toolbar"
 import {PageHeader, PageShell} from "@/components/layout/page-shell"
 import {useSupabaseQuery} from "@/hooks/use-supabase-query"
 import {TripTabs} from "@/pages/trip-detail"
-import {demoTripBundle, getTripBundle} from "@/services/traveloop-api"
+import {emptyTripBundle, getTripBundle} from "@/services/traveloop-api"
 
 export function TripJournalPage() {
   const {id} = useParams()
-  const {data} = useSupabaseQuery(`trip-journal:${id ?? "demo"}`, demoTripBundle, () => getTripBundle(id))
+  const {data} = useSupabaseQuery(`trip-journal:${id ?? "missing"}`, emptyTripBundle, () => getTripBundle(id))
   const {journalEntries, trip} = data
 
   return (
     <PageShell>
+      {data.notFound ? (
+        <EmptyState description="This trip is missing or you do not have access to it." title="Trip not found" />
+      ) : (
+        <>
       <PageHeader
         actions={
           <Button variant="accent">
@@ -47,7 +52,7 @@ export function TripJournalPage() {
         </Card>
 
         <section className="space-y-3">
-          {journalEntries.map((entry) => (
+          {journalEntries.length ? journalEntries.map((entry) => (
             <Card key={entry.id}>
               <CardContent className="pt-5">
                 <div className="flex items-start justify-between gap-3">
@@ -69,9 +74,13 @@ export function TripJournalPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          )) : (
+            <EmptyState description="Create notes after you add real journal entries for this trip." title="No journal entries yet" />
+          )}
         </section>
       </div>
+      </>
+      )}
     </PageShell>
   )
 }

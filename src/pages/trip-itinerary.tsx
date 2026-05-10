@@ -2,6 +2,7 @@ import {CalendarPlus, IndianRupee, Plus} from "lucide-react"
 import {useParams} from "react-router-dom"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent} from "@/components/ui/card"
+import {EmptyState} from "@/components/ui/empty-state"
 import {SearchBar} from "@/components/ui/input"
 import {PageHeader, PageShell} from "@/components/layout/page-shell"
 import {ActivityCard} from "@/components/travel/activity-card"
@@ -9,15 +10,19 @@ import {SearchToolbar} from "@/components/travel/search-toolbar"
 import {SectionHeader} from "@/components/travel/section-header"
 import {useSupabaseQuery} from "@/hooks/use-supabase-query"
 import {TripTabs} from "@/pages/trip-detail"
-import {demoTripBundle, getTripBundle} from "@/services/traveloop-api"
+import {emptyTripBundle, getTripBundle} from "@/services/traveloop-api"
 
 export function TripItineraryPage() {
   const {id} = useParams()
-  const {data} = useSupabaseQuery(`trip-itinerary:${id ?? "demo"}`, demoTripBundle, () => getTripBundle(id))
+  const {data} = useSupabaseQuery(`trip-itinerary:${id ?? "missing"}`, emptyTripBundle, () => getTripBundle(id))
   const {activities, itinerarySections, trip} = data
 
   return (
     <PageShell>
+      {data.notFound ? (
+        <EmptyState description="This trip is missing or you do not have access to it." title="Trip not found" />
+      ) : (
+        <>
       <PageHeader
         actions={
           <Button variant="accent">
@@ -53,7 +58,7 @@ export function TripItineraryPage() {
 
         <section className="space-y-5">
           <SearchToolbar placeholder="Search itinerary sections" />
-          {itinerarySections.map((section) => (
+          {itinerarySections.length ? itinerarySections.map((section) => (
             <Card key={section.id}>
               <CardContent className="pt-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -96,13 +101,17 @@ export function TripItineraryPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          )) : (
+            <EmptyState description="Create or update a trip with start and end dates to generate day rows." title="No itinerary days yet" />
+          )}
           <Button className="w-full" variant="outline">
             <Plus className="h-4 w-4" />
             Add another section
           </Button>
         </section>
       </div>
+      </>
+      )}
     </PageShell>
   )
 }

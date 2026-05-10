@@ -2,13 +2,14 @@ import {BookOpen, CheckSquare, Coins, Globe2, Route, Share2, Users} from "lucide
 import {useParams} from "react-router-dom"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent} from "@/components/ui/card"
+import {EmptyState} from "@/components/ui/empty-state"
 import {SegmentedTabs, TabLink} from "@/components/ui/tabs"
 import {PageHeader, PageShell} from "@/components/layout/page-shell"
 import {MetricCard} from "@/components/travel/metric-card"
 import {SectionHeader} from "@/components/travel/section-header"
 import {StatusBadge} from "@/components/travel/status-badge"
 import {useSupabaseQuery} from "@/hooks/use-supabase-query"
-import {demoTripBundle, getTripBundle} from "@/services/traveloop-api"
+import {emptyTripBundle, getTripBundle} from "@/services/traveloop-api"
 
 export const tripTabs = [
   ["Overview", ""],
@@ -21,8 +22,23 @@ export const tripTabs = [
 
 export function TripDetailPage() {
   const {id} = useParams()
-  const {data} = useSupabaseQuery(`trip-detail:${id ?? "demo"}`, demoTripBundle, () => getTripBundle(id))
-  const {trip} = data
+  const {data} = useSupabaseQuery(`trip-detail:${id ?? "missing"}`, emptyTripBundle, () => getTripBundle(id))
+  const {expenseLines, itinerarySections, packingGroups, trip} = data
+  const plannedStops = itinerarySections.reduce((sum, section) => sum + section.activities.length, 0)
+  const packedItems = packingGroups.flatMap((group) => group.items).filter((item) => item.packed).length
+  const totalItems = packingGroups.flatMap((group) => group.items).length
+  const actualSpent = expenseLines.reduce((sum, expense) => sum + expense.amount, 0)
+
+  if (data.notFound) {
+    return (
+      <PageShell>
+        <EmptyState
+          description="This trip does not exist in your Supabase account, or RLS is correctly blocking access to it."
+          title="Trip not found"
+        />
+      </PageShell>
+    )
+  }
 
   return (
     <PageShell>
@@ -51,9 +67,9 @@ export function TripDetailPage() {
       </section>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard icon={Route} label="Itinerary" value="3 days" detail="12 planned stops" />
-        <MetricCard icon={Coins} label="Budget" value={`₹${(trip.budget ?? 0).toLocaleString("en-IN")}`} detail="Private by default" />
-        <MetricCard icon={CheckSquare} label="Packing" value="8/12" detail="Items packed" />
+        <MetricCard icon={Route} label="Itinerary" value={`${itinerarySections.length} days`} detail={`${plannedStops} planned stops`} />
+        <MetricCard icon={Coins} label="Actual spend" value={`₹${actualSpent.toLocaleString("en-IN")}`} detail="Private by default" />
+        <MetricCard icon={CheckSquare} label="Packing" value={`${packedItems}/${totalItems}`} detail="Items packed" />
         <MetricCard icon={Users} label="Travelers" value={trip.travelers ?? 1} detail="Group size" />
       </div>
 

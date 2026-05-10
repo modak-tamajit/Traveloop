@@ -3,15 +3,17 @@ import {Link} from "react-router-dom"
 import {Badge} from "@/components/ui/badge"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent} from "@/components/ui/card"
+import {EmptyState, ErrorState} from "@/components/ui/empty-state"
+import {CardSkeleton} from "@/components/ui/skeleton"
 import {PageHeader, PageShell} from "@/components/layout/page-shell"
 import {SearchToolbar} from "@/components/travel/search-toolbar"
 import {StatusBadge} from "@/components/travel/status-badge"
 import {useSupabaseQuery} from "@/hooks/use-supabase-query"
-import {demoDashboard, listTrips} from "@/services/traveloop-api"
+import {emptyDashboard, listTrips} from "@/services/traveloop-api"
 import type {Trip} from "@/types"
 
 export function TripListingPage() {
-  const {data: trips} = useSupabaseQuery("trip-listing", demoDashboard.trips, async () => (await listTrips()).data)
+  const {data: trips, error, isLoading} = useSupabaseQuery("trip-listing", emptyDashboard.trips, async () => (await listTrips()).data)
   const tripGroups = [
     {label: "Ongoing", items: trips.filter((trip) => trip.status === "active")},
     {label: "Upcoming", items: trips.filter((trip) => trip.status === "planned" || trip.status === "draft")},
@@ -31,21 +33,46 @@ export function TripListingPage() {
         title="Trip Listing"
       />
       <SearchToolbar placeholder="Search trips" />
+      {error ? <div className="mt-4"><ErrorState description={error} title="Could not load trips" /></div> : null}
 
       <div className="mt-6 space-y-6">
-        {tripGroups.map((group) => (
-          <section key={group.label}>
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-xl font-bold">{group.label}</h2>
-              <Badge variant="muted">{group.items.length} trips</Badge>
-            </div>
-            <div className="space-y-3">
-              {group.items.map((trip) => (
-                <TripOverviewRow key={`${group.label}-${trip.id}`} trip={trip} />
-              ))}
-            </div>
-          </section>
-        ))}
+        {isLoading ? (
+          <>
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+          </>
+        ) : trips.length ? (
+          tripGroups.map((group) => (
+            <section key={group.label}>
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-xl font-bold">{group.label}</h2>
+                <Badge variant="muted">{group.items.length} trips</Badge>
+              </div>
+              {group.items.length ? (
+                <div className="space-y-3">
+                  {group.items.map((trip) => (
+                    <TripOverviewRow key={`${group.label}-${trip.id}`} trip={trip} />
+                  ))}
+                </div>
+              ) : (
+                <p className="rounded-xl border border-dashed border-border bg-card p-4 text-sm text-foreground/60">
+                  No {group.label.toLowerCase()} trips yet.
+                </p>
+              )}
+            </section>
+          ))
+        ) : (
+          <EmptyState
+            action={
+              <Button asChild variant="accent">
+                <Link to="/add-trip">Plan a real trip</Link>
+              </Button>
+            }
+            description="Create a trip to see it grouped by status. Nothing shown here is mock data."
+            title="No trips in your account"
+          />
+        )}
       </div>
     </PageShell>
   )
