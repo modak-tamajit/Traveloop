@@ -54,6 +54,7 @@ export type TripBundle = {
   journalEntries: JournalEntry[]
   expenseLines: ExpenseLine[]
   source: DataSource
+  notFound?: boolean
 }
 
 export type PublicShareView = {
@@ -99,6 +100,22 @@ const tripSelectColumns =
 
 export const demoDashboard: DashboardData = {trips: mockTrips, cities: mockCities, source: "demo"}
 export const demoCatalog: CatalogData = {cities: mockCities, activities: mockActivities, source: "demo"}
+export const emptyDashboard: DashboardData = {trips: [], cities: [], source: "supabase"}
+export const emptyCatalog: CatalogData = {cities: [], activities: [], source: "supabase"}
+
+export const emptyTrip: Trip = {
+  id: "",
+  userId: "",
+  title: "Trip not found",
+  destination: "India",
+  startDate: "",
+  endDate: "",
+  status: "draft",
+  coverImageUrl: defaultCityImage,
+  isPublic: false,
+  travelers: 1,
+  highlights: [],
+}
 
 export const demoTripBundle: TripBundle = {
   trip: mockTrips[0],
@@ -109,6 +126,18 @@ export const demoTripBundle: TripBundle = {
   journalEntries: mockJournalEntries,
   expenseLines: mockExpenseLines,
   source: "demo",
+}
+
+export const emptyTripBundle: TripBundle = {
+  trip: emptyTrip,
+  trips: [],
+  activities: [],
+  itinerarySections: [],
+  packingGroups: [],
+  journalEntries: [],
+  expenseLines: [],
+  source: "supabase",
+  notFound: true,
 }
 
 export const demoAdminAnalytics: AdminAnalyticsPayload = {
@@ -153,6 +182,29 @@ export const demoAdminAnalytics: AdminAnalyticsPayload = {
   ],
 }
 
+export function emptyAdminAnalytics(): AdminAnalyticsPayload {
+  return {
+    totals: {
+      users: 0,
+      trips: 0,
+      public_shares: 0,
+      public_share_views: 0,
+      expenses_amount: 0,
+      cities: 0,
+      activities: 0,
+      itinerary_items: 0,
+      packing_items: 0,
+      journal_entries: 0,
+      trip_activity_events: 0,
+    },
+    trips_by_status: {},
+    expenses_by_category: {},
+    top_cities: [],
+    daily_trip_creations: [],
+    daily_public_share_views: [],
+  }
+}
+
 export async function getDashboardData(): Promise<DashboardData> {
   const [tripsResult, citiesResult] = await Promise.all([listTrips(), listCities()])
   return {
@@ -174,10 +226,10 @@ export async function getCatalogData(): Promise<CatalogData> {
 export async function getTripBundle(tripId?: string): Promise<TripBundle> {
   const tripsResult = await listTrips()
   const trips = tripsResult.data
-  const trip = trips.find((item) => item.id === tripId) ?? trips[0] ?? mockTrips[0]
+  const trip = trips.find((item) => item.id === tripId)
 
-  if (!supabase || tripsResult.source === "demo") {
-    return {...demoTripBundle, trip, trips}
+  if (!trip) {
+    return {...emptyTripBundle, trips, notFound: true}
   }
 
   const [activitiesResult, itineraryResult, packingResult, journalResult, expenseResult] = await Promise.all([
@@ -252,7 +304,7 @@ export async function loadPublicShare(shareId?: string): Promise<PublicShareView
 
 export async function getAdminAnalytics(): Promise<DataResult<AdminAnalyticsPayload>> {
   if (!supabase) {
-    return {data: demoAdminAnalytics, source: "demo", error: "Supabase env is not configured"}
+    return {data: emptyAdminAnalytics(), source: "demo", error: "Supabase env is not configured"}
   }
 
   const {data, error} = await supabase.rpc(supabaseRpcNames.getAdminAnalytics, {
@@ -261,7 +313,7 @@ export async function getAdminAnalytics(): Promise<DataResult<AdminAnalyticsPayl
   })
 
   if (error || !data) {
-    return {data: demoAdminAnalytics, source: "demo", error: error?.message ?? "No analytics returned"}
+    return {data: emptyAdminAnalytics(), source: "supabase", error: error?.message ?? "No analytics returned"}
   }
 
   return {data: data as AdminAnalyticsPayload, source: "supabase", error: null}
@@ -269,7 +321,7 @@ export async function getAdminAnalytics(): Promise<DataResult<AdminAnalyticsPayl
 
 export async function listTrips(): Promise<DataResult<Trip[]>> {
   if (!supabase) {
-    return {data: mockTrips, source: "demo", error: "Supabase env is not configured"}
+    return {data: [], source: "demo", error: "Supabase env is not configured"}
   }
 
   const {data, error} = await supabase.from("trips").select(tripSelectColumns).order("start_date", {ascending: true, nullsFirst: false})
@@ -284,7 +336,7 @@ export async function listTrips(): Promise<DataResult<Trip[]>> {
 
 export async function createTrip(input: CreateTripInput): Promise<DataResult<Trip>> {
   if (!supabase) {
-    return {data: mockTrips[0], source: "demo", error: "Supabase env is not configured"}
+    throw new Error("Supabase env is not configured")
   }
 
   const userId = await requireUserId()
@@ -300,7 +352,7 @@ export async function createTrip(input: CreateTripInput): Promise<DataResult<Tri
     .single()
 
   if (error) {
-    return {data: mockTrips[0], source: "supabase", error: error.message}
+    throw error
   }
 
   const trip = mapTripRow(data as TripRow)
@@ -310,7 +362,7 @@ export async function createTrip(input: CreateTripInput): Promise<DataResult<Tri
 
 export async function updateTrip(input: UpdateTripInput): Promise<DataResult<Trip>> {
   if (!supabase) {
-    return {data: mockTrips[0], source: "demo", error: "Supabase env is not configured"}
+    throw new Error("Supabase env is not configured")
   }
 
   await requireUserId()
@@ -323,7 +375,7 @@ export async function updateTrip(input: UpdateTripInput): Promise<DataResult<Tri
     .single()
 
   if (error) {
-    return {data: mockTrips[0], source: "supabase", error: error.message}
+    throw error
   }
 
   const trip = mapTripRow(data as TripRow)
@@ -333,7 +385,7 @@ export async function updateTrip(input: UpdateTripInput): Promise<DataResult<Tri
 
 export async function deleteTrip(tripId: string): Promise<DataResult<{id: string}>> {
   if (!supabase) {
-    return {data: {id: tripId}, source: "demo", error: "Supabase env is not configured"}
+    throw new Error("Supabase env is not configured")
   }
 
   await requireUserId()
@@ -348,7 +400,7 @@ export async function deleteTrip(tripId: string): Promise<DataResult<{id: string
 
 export async function listCities(): Promise<DataResult<CityOption[]>> {
   if (!supabase) {
-    return {data: mockCities, source: "demo", error: "Supabase env is not configured"}
+    return {data: [], source: "demo", error: "Supabase env is not configured"}
   }
 
   const {data, error} = await supabase
@@ -359,16 +411,16 @@ export async function listCities(): Promise<DataResult<CityOption[]>> {
     .limit(12)
 
   const rows = data as CityRow[] | null
-  if (error || !rows?.length) {
-    return {data: mockCities, source: "demo", error: error?.message ?? "No cities returned"}
+  if (error) {
+    return {data: [], source: "supabase", error: error.message}
   }
 
-  return {data: rows.map(mapCityRow), source: "supabase", error: null}
+  return {data: (rows ?? []).map(mapCityRow), source: "supabase", error: null}
 }
 
 export async function listActivities(): Promise<DataResult<Activity[]>> {
   if (!supabase) {
-    return {data: mockActivities, source: "demo", error: "Supabase env is not configured"}
+    return {data: [], source: "demo", error: "Supabase env is not configured"}
   }
 
   const {data, error} = await supabase.rpc(supabaseRpcNames.searchActivities, {
@@ -379,11 +431,11 @@ export async function listActivities(): Promise<DataResult<Activity[]>> {
   })
 
   const rows = data as ActivitySearchResult[] | null
-  if (error || !rows?.length) {
-    return {data: mockActivities, source: "demo", error: error?.message ?? "No activities returned"}
+  if (error) {
+    return {data: [], source: "supabase", error: error.message}
   }
 
-  return {data: rows.map(mapActivitySearchResult), source: "supabase", error: null}
+  return {data: (rows ?? []).map(mapActivitySearchResult), source: "supabase", error: null}
 }
 
 async function listItinerarySections(tripId: string): Promise<DataResult<ItinerarySection[]>> {

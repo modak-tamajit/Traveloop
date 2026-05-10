@@ -47,32 +47,17 @@ type AuthContextValue = {
   updateProfile: (input: ProfileUpdateInput) => Promise<void>
 }
 
-const demoProfile: UserProfile = {
-  id: "demo-user",
-  email: "traveler@safarnama.app",
-  fullName: "Aarav Mehta",
-  role: "admin",
-  city: "Mumbai",
-  country: "India",
-  phone: "+91 90000 12000",
-  avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=320&q=80",
-  bio: "Travel planner, culture seeker, and keeper of calm itineraries.",
-}
-
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({children}: {children: ReactNode}) {
   const [session, setSession] = useState<Session | null>(null)
   const [user, setUser] = useState<User | null>(null)
-  const [profile, setProfile] = useState<UserProfile | null>(supabase ? null : demoProfile)
+  const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(Boolean(supabase))
   const [authError, setAuthError] = useState<string | null>(null)
 
   const loadProfile = useCallback(async (authUser: User) => {
-    if (!supabase) {
-      setProfile(demoProfile)
-      return
-    }
+    if (!supabase) throw new Error("Supabase environment variables are not configured")
 
     const row = await ensureProfile(authUser)
     setProfile(mapProfileRow(row, authUser))
@@ -137,8 +122,7 @@ export function AuthProvider({children}: {children: ReactNode}) {
     async ({email, password}: AuthCredentials) => {
       setAuthError(null)
       if (!supabase) {
-        setProfile(demoProfile)
-        return
+        throw new Error("Supabase environment variables are not configured")
       }
 
       const {data, error} = await supabase.auth.signInWithPassword({
@@ -162,8 +146,7 @@ export function AuthProvider({children}: {children: ReactNode}) {
     async (credentials: SignUpCredentials): Promise<SignUpResult> => {
       setAuthError(null)
       if (!supabase) {
-        setProfile(demoProfile)
-        return {needsEmailConfirmation: false}
+        throw new Error("Supabase environment variables are not configured")
       }
 
       const metadata = profileMetadataFromInput(credentials)
@@ -207,11 +190,7 @@ export function AuthProvider({children}: {children: ReactNode}) {
     async (input: ProfileUpdateInput) => {
       setAuthError(null)
       if (!supabase) {
-        setProfile((current) => ({
-          ...(current ?? demoProfile),
-          ...input,
-        }))
-        return
+        throw new Error("Supabase environment variables are not configured")
       }
 
       if (!user) throw new Error("You must be signed in to update your profile")

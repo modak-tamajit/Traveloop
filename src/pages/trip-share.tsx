@@ -3,11 +3,12 @@ import {useParams} from "react-router-dom"
 import {Badge} from "@/components/ui/badge"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
+import {EmptyState} from "@/components/ui/empty-state"
 import {Field, Input, Textarea} from "@/components/ui/input"
 import {PageHeader, PageShell} from "@/components/layout/page-shell"
 import {useSupabaseQuery} from "@/hooks/use-supabase-query"
 import {TripTabs} from "@/pages/trip-detail"
-import {demoTripBundle, getTripBundle} from "@/services/traveloop-api"
+import {emptyTripBundle, getTripBundle} from "@/services/traveloop-api"
 
 const visibilityOptions = [
   {label: "Overview", description: "Trip title, destination, dates, and cover image.", enabled: true},
@@ -18,12 +19,16 @@ const visibilityOptions = [
 
 export function TripSharePage() {
   const {id} = useParams()
-  const {data} = useSupabaseQuery(`trip-share:${id ?? "demo"}`, demoTripBundle, () => getTripBundle(id))
+  const {data} = useSupabaseQuery(`trip-share:${id ?? "missing"}`, emptyTripBundle, () => getTripBundle(id))
   const {itinerarySections, trip} = data
   const shareUrl = `https://traveloop.app/share/${trip.id.slice(0, 8)}`
 
   return (
     <PageShell>
+      {data.notFound ? (
+        <EmptyState description="This trip is missing or you do not have access to it." title="Trip not found" />
+      ) : (
+        <>
       <PageHeader
         actions={
           <Button>
@@ -108,7 +113,7 @@ export function TripSharePage() {
                 <Badge variant={trip.isPublic ? "success" : "muted"}>{trip.isPublic ? "Live" : "Draft"}</Badge>
               </div>
               <div className="mt-4 space-y-3">
-                {itinerarySections.map((section) => (
+                {itinerarySections.length ? itinerarySections.map((section) => (
                   <div className="rounded-lg border border-border p-3" key={section.id}>
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-bold">{section.day}</p>
@@ -116,7 +121,11 @@ export function TripSharePage() {
                     </div>
                     <p className="mt-1 text-sm text-foreground/70">{section.title}</p>
                   </div>
-                ))}
+                )) : (
+                  <p className="rounded-lg border border-dashed border-border p-3 text-sm text-foreground/60">
+                    Add itinerary days before publishing a share preview.
+                  </p>
+                )}
               </div>
               <Button className="mt-5 w-full" variant="outline">
                 <Eye className="h-4 w-4" />
@@ -126,6 +135,8 @@ export function TripSharePage() {
           </Card>
         </aside>
       </div>
+      </>
+      )}
     </PageShell>
   )
 }

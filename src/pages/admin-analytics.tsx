@@ -1,30 +1,23 @@
 import {Activity, BarChart3, Globe2, MapPinned, Users} from "lucide-react"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent} from "@/components/ui/card"
+import {EmptyState, ErrorState} from "@/components/ui/empty-state"
 import {SegmentedTabs, TabButton} from "@/components/ui/tabs"
 import {PageHeader, PageShell} from "@/components/layout/page-shell"
 import {MetricCard} from "@/components/travel/metric-card"
 import {SearchToolbar} from "@/components/travel/search-toolbar"
 import {useSupabaseQuery} from "@/hooks/use-supabase-query"
-import {demoAdminAnalytics, getAdminAnalytics} from "@/services/traveloop-api"
-
-const barData = [
-  {date: "Mon", count: 42},
-  {date: "Tue", count: 58},
-  {date: "Wed", count: 48},
-  {date: "Thu", count: 74},
-  {date: "Fri", count: 63},
-]
+import {emptyAdminAnalytics, getAdminAnalytics} from "@/services/traveloop-api"
 
 export function AdminAnalyticsPage() {
   const {data: analyticsResult} = useSupabaseQuery(
     "admin-analytics",
-    {data: demoAdminAnalytics, source: "demo" as const, error: null},
+    {data: emptyAdminAnalytics(), source: "supabase" as const, error: null},
     getAdminAnalytics,
   )
   const analytics = analyticsResult.data
   const totals = analytics.totals
-  const trendData = analytics.daily_trip_creations.length ? analytics.daily_trip_creations.slice(0, 5) : barData
+  const trendData = analytics.daily_trip_creations.slice(0, 5)
 
   return (
     <PageShell>
@@ -35,6 +28,11 @@ export function AdminAnalyticsPage() {
       />
 
       <SearchToolbar placeholder="Search analytics" />
+      {analyticsResult.error ? (
+        <div className="mt-4">
+          <ErrorState description={analyticsResult.error} title="Live analytics are not available" />
+        </div>
+      ) : null}
       <SegmentedTabs className="mt-4">
         <TabButton active>Manage users</TabButton>
         <TabButton>Popular cities</TabButton>
@@ -55,14 +53,20 @@ export function AdminAnalyticsPage() {
             <div className="grid gap-6 lg:grid-cols-2">
               <section>
                 <h2 className="font-bold">Trip creation trend</h2>
-                <div className="mt-6 flex h-56 items-end gap-3 border-b border-l border-border px-4">
-                  {trendData.map((item) => (
-                    <div className="flex flex-1 flex-col items-center gap-2" key={item.date}>
-                      <div className="w-full rounded-t-lg bg-accent" style={{height: `${Math.max(item.count, 8) * 2}px`}} />
-                      <span className="text-xs font-semibold text-foreground/55">{item.date}</span>
-                    </div>
-                  ))}
-                </div>
+                {trendData.length ? (
+                  <div className="mt-6 flex h-56 items-end gap-3 border-b border-l border-border px-4">
+                    {trendData.map((item) => (
+                      <div className="flex flex-1 flex-col items-center gap-2" key={item.date}>
+                        <div className="w-full rounded-t-lg bg-accent" style={{height: `${Math.max(item.count, 8) * 2}px`}} />
+                        <span className="text-xs font-semibold text-foreground/55">{item.date}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-5">
+                    <EmptyState description="Create real trips to populate aggregate admin trends." title="No trend data yet" />
+                  </div>
+                )}
               </section>
               <section>
                 <h2 className="font-bold">Share mix</h2>
@@ -84,7 +88,6 @@ export function AdminAnalyticsPage() {
             <BarChart3 className="h-6 w-6 text-accent" />
             <h2 className="mt-3 font-bold">Operational summary</h2>
             <div className="mt-4 space-y-4 text-sm text-foreground/65">
-              {analyticsResult.error ? <p className="font-semibold text-accent">Live analytics fallback: {analyticsResult.error}</p> : null}
               <p>Popular cities highlight current user travel demand across active and planned trips.</p>
               <p>Activity trends help tune seed data, category filters, and recommendation ordering.</p>
               <p>Share analytics stay aggregate-only and avoid private profile or expense exposure.</p>
