@@ -123,7 +123,7 @@ export function WelcomePage() {
           <img
             alt="Mountain road and travel landscape"
             className="absolute inset-0 h-full w-full object-cover"
-            src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80"
+            src="https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1600&q=80"
           />
           <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/40 to-black/10" />
           <div className="relative flex min-h-[620px] flex-col justify-between p-6 text-white sm:p-8">
@@ -139,7 +139,7 @@ export function WelcomePage() {
               </Button>
             </nav>
             <div className="max-w-2xl">
-              <p className="mb-3 text-sm font-bold uppercase tracking-wide text-amber-200">Travel command center</p>
+              <p className="mb-3 text-sm font-bold uppercase tracking-wide text-amber-200">India travel command center</p>
               <h1 className="text-5xl font-bold leading-tight sm:text-7xl">Plan every journey with clarity.</h1>
               <p className="mt-5 max-w-xl text-lg text-white/82">
                 Build trips, shape day-wise itineraries, track expenses, pack neatly, journal memories, and share only

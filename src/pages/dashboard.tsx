@@ -37,12 +37,12 @@ export function DashboardPage() {
           <img
             alt="Train passing through a scenic mountain route"
             className="absolute inset-0 h-full w-full object-cover"
-            src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80"
+            src="https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1600&q=80"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/38 to-transparent" />
           <div className="relative max-w-2xl p-6 text-white sm:p-8">
-            <p className="text-sm font-bold uppercase tracking-wide text-amber-200">Top regional selections</p>
-            <h2 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">Choose the next rhythm of your trip.</h2>
+            <p className="text-sm font-bold uppercase tracking-wide text-amber-200">Top Indian regional selections</p>
+            <h2 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">Shape your next India itinerary.</h2>
             <p className="mt-4 text-white/78">
               Search destinations, compare activities, and jump back into the itineraries already taking shape.
             </p>
