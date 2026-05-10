@@ -1,0 +1,2 @@
+import type {Trip} from "@/types"
+export const trips:Trip[]=[{id:"c1fcd2fb-3d66-4f1f-98cf-6a75d85f6b51",userId:"demo-user",title:"Monsoon Trails",destination:"Kerala, India",startDate:"2026-06-18",endDate:"2026-06-25",status:"planned",primaryCityId:"kochi",coverImageUrl:"",isPublic:true},{id:"afd8a850-8b8a-4f9a-944e-9ef32e671a70",userId:"demo-user",title:"Desert Gold",destination:"Jaipur, India",startDate:"2026-09-04",endDate:"2026-09-10",status:"draft",primaryCityId:"jaipur",coverImageUrl:"",isPublic:false}]
