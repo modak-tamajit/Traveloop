@@ -1,19 +1,119 @@
+import {useState} from "react"
 import {ArrowRight, Camera, Compass, LockKeyhole, MapPin, Plane, UserPlus} from "lucide-react"
-import {useNavigate} from "react-router-dom"
+import {useLocation, useNavigate} from "react-router-dom"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent} from "@/components/ui/card"
 import {Field, Input, Textarea} from "@/components/ui/input"
 import {useToast} from "@/components/ui/toast"
 import {useAuth} from "@/providers/auth-provider"
 
+type LoginForm = {
+  email: string
+  password: string
+}
+
+type RegisterForm = LoginForm & {
+  firstName: string
+  lastName: string
+  phone: string
+  city: string
+  country: string
+  bio: string
+}
+
+type RouteState = {
+  from?: {
+    pathname?: string
+  }
+}
+
 export function WelcomePage() {
-  const {isAuthenticated, signIn} = useAuth()
+  const {isAuthenticated, signIn, signUp} = useAuth()
   const {notify} = useToast()
   const navigate = useNavigate()
-  const enterApp = (message: string) => {
-    signIn()
-    notify({title: message, description: "Opening the main landing page."})
-    navigate("/dashboard")
+  const location = useLocation()
+  const redirectTo = (location.state as RouteState | null)?.from?.pathname ?? "/dashboard"
+  const [submitting, setSubmitting] = useState<"login" | "register" | null>(null)
+  const [loginForm, setLoginForm] = useState<LoginForm>({email: "", password: ""})
+  const [registerForm, setRegisterForm] = useState<RegisterForm>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    phone: "",
+    city: "",
+    country: "",
+    bio: "",
+  })
+
+  const openAuthenticatedApp = () => {
+    if (isAuthenticated) {
+      navigate("/dashboard")
+      return
+    }
+    notify({
+      title: "Sign in first",
+      description: "Use your Supabase account or create a new traveler profile to open Traveloop.",
+    })
+  }
+
+  const handleLogin = async () => {
+    if (!loginForm.email.trim() || !loginForm.password) {
+      notify({title: "Email and password required", description: "Enter your Supabase Auth credentials to continue."})
+      return
+    }
+
+    try {
+      setSubmitting("login")
+      await signIn(loginForm)
+      notify({title: "Login successful", description: "Opening your planning workspace."})
+      navigate(redirectTo)
+    } catch (error) {
+      notify({title: "Login failed", description: errorMessage(error)})
+    } finally {
+      setSubmitting(null)
+    }
+  }
+
+  const handleRegister = async () => {
+    if (!registerForm.firstName.trim() || !registerForm.email.trim() || !registerForm.password) {
+      notify({title: "Missing registration details", description: "First name, email, and password are required."})
+      return
+    }
+
+    if (registerForm.password.length < 6) {
+      notify({title: "Password is too short", description: "Supabase Auth requires at least 6 characters."})
+      return
+    }
+
+    try {
+      setSubmitting("register")
+      const result = await signUp({
+        firstName: registerForm.firstName,
+        lastName: registerForm.lastName || undefined,
+        email: registerForm.email,
+        password: registerForm.password,
+        phone: registerForm.phone || undefined,
+        city: registerForm.city || undefined,
+        country: registerForm.country || undefined,
+        bio: registerForm.bio || undefined,
+      })
+
+      if (result.needsEmailConfirmation) {
+        notify({
+          title: "Confirm your email",
+          description: "Supabase created the account. Confirm the email, then sign in here.",
+        })
+        return
+      }
+
+      notify({title: "Registration complete", description: "Your traveler profile is connected to Supabase Auth."})
+      navigate("/dashboard")
+    } catch (error) {
+      notify({title: "Registration failed", description: errorMessage(error)})
+    } finally {
+      setSubmitting(null)
+    }
   }
 
   return (
@@ -34,7 +134,7 @@ export function WelcomePage() {
                 </span>
                 Traveloop
               </div>
-              <Button className="border-white/25 bg-white/12 text-white hover:bg-white/20" onClick={() => enterApp("Welcome back")} variant="outline">
+              <Button className="border-white/25 bg-white/12 text-white hover:bg-white/20" onClick={openAuthenticatedApp} variant="outline">
                 Open App
               </Button>
             </nav>
@@ -46,12 +146,12 @@ export function WelcomePage() {
                 what you approve.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Button className="bg-white text-primary hover:bg-white/90" onClick={() => enterApp("Planning session ready")} size="lg">
+                <Button className="bg-white text-primary hover:bg-white/90" onClick={openAuthenticatedApp} size="lg">
                   <Plane className="h-4 w-4" />
                   Start planning
                 </Button>
-                <Button className="border-white/25 bg-white/12 text-white hover:bg-white/20" onClick={() => enterApp("Demo session ready")} size="lg" variant="outline">
-                  {isAuthenticated ? "Demo active" : "Use demo auth"}
+                <Button className="border-white/25 bg-white/12 text-white hover:bg-white/20" onClick={openAuthenticatedApp} size="lg" variant="outline">
+                  {isAuthenticated ? "Go to dashboard" : "Sign in to continue"}
                 </Button>
               </div>
             </div>
@@ -77,14 +177,26 @@ export function WelcomePage() {
                 <LockKeyhole className="h-8 w-8" />
               </div>
               <div className="mt-5 space-y-4">
-                <Field label="Email or username">
-                  <Input placeholder="traveler@safarnama.app" />
+                <Field label="Email address">
+                  <Input
+                    autoComplete="email"
+                    onChange={(event) => setLoginForm((current) => ({...current, email: event.target.value}))}
+                    placeholder="traveler@example.com"
+                    type="email"
+                    value={loginForm.email}
+                  />
                 </Field>
                 <Field label="Password">
-                  <Input placeholder="Enter password" type="password" />
+                  <Input
+                    autoComplete="current-password"
+                    onChange={(event) => setLoginForm((current) => ({...current, password: event.target.value}))}
+                    placeholder="Enter password"
+                    type="password"
+                    value={loginForm.password}
+                  />
                 </Field>
-                <Button className="w-full" onClick={() => enterApp("Login successful")}>
-                  Login
+                <Button className="w-full" disabled={submitting === "login"} onClick={handleLogin}>
+                  {submitting === "login" ? "Logging in..." : "Login"}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -104,30 +216,74 @@ export function WelcomePage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="First name">
-                  <Input placeholder="Aarav" />
+                  <Input
+                    autoComplete="given-name"
+                    onChange={(event) => setRegisterForm((current) => ({...current, firstName: event.target.value}))}
+                    placeholder="Aarav"
+                    value={registerForm.firstName}
+                  />
                 </Field>
                 <Field label="Last name">
-                  <Input placeholder="Mehta" />
+                  <Input
+                    autoComplete="family-name"
+                    onChange={(event) => setRegisterForm((current) => ({...current, lastName: event.target.value}))}
+                    placeholder="Mehta"
+                    value={registerForm.lastName}
+                  />
                 </Field>
                 <Field label="Email address">
-                  <Input placeholder="name@email.com" type="email" />
+                  <Input
+                    autoComplete="email"
+                    onChange={(event) => setRegisterForm((current) => ({...current, email: event.target.value}))}
+                    placeholder="name@email.com"
+                    type="email"
+                    value={registerForm.email}
+                  />
+                </Field>
+                <Field label="Password">
+                  <Input
+                    autoComplete="new-password"
+                    onChange={(event) => setRegisterForm((current) => ({...current, password: event.target.value}))}
+                    placeholder="Minimum 6 characters"
+                    type="password"
+                    value={registerForm.password}
+                  />
                 </Field>
                 <Field label="Phone number">
-                  <Input placeholder="+91 90000 12000" />
+                  <Input
+                    autoComplete="tel"
+                    onChange={(event) => setRegisterForm((current) => ({...current, phone: event.target.value}))}
+                    placeholder="+91 90000 12000"
+                    value={registerForm.phone}
+                  />
                 </Field>
                 <Field label="City">
-                  <Input placeholder="Mumbai" />
+                  <Input
+                    autoComplete="address-level2"
+                    onChange={(event) => setRegisterForm((current) => ({...current, city: event.target.value}))}
+                    placeholder="Mumbai"
+                    value={registerForm.city}
+                  />
                 </Field>
                 <Field label="Country">
-                  <Input placeholder="India" />
+                  <Input
+                    autoComplete="country-name"
+                    onChange={(event) => setRegisterForm((current) => ({...current, country: event.target.value}))}
+                    placeholder="India"
+                    value={registerForm.country}
+                  />
                 </Field>
                 <Field className="sm:col-span-2" label="Additional information">
-                  <Textarea placeholder="Preferred travel style, accessibility needs, or planning notes" />
+                  <Textarea
+                    onChange={(event) => setRegisterForm((current) => ({...current, bio: event.target.value}))}
+                    placeholder="Preferred travel style, accessibility needs, or planning notes"
+                    value={registerForm.bio}
+                  />
                 </Field>
               </div>
-              <Button className="mt-5 w-full" onClick={() => enterApp("Registration complete")} variant="accent">
+              <Button className="mt-5 w-full" disabled={submitting === "register"} onClick={handleRegister} variant="accent">
                 <UserPlus className="h-4 w-4" />
-                Register user
+                {submitting === "register" ? "Creating account..." : "Register user"}
               </Button>
             </CardContent>
           </Card>
@@ -142,4 +298,8 @@ export function WelcomePage() {
       </div>
     </main>
   )
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Please try again."
 }

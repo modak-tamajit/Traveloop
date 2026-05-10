@@ -23,7 +23,7 @@ import type {
   TripRow,
 } from "@/services/supabase/contracts"
 import {supabaseRpcNames} from "@/services/supabase/contracts"
-import type {Activity, CityOption, ExpenseLine, ItinerarySection, JournalEntry, PackingGroup, Trip} from "@/types"
+import type {Activity, CityOption, ExpenseLine, ItinerarySection, JournalEntry, PackingGroup, Trip, TripStatus} from "@/types"
 
 export type DataSource = "supabase" | "demo"
 
@@ -64,8 +64,37 @@ export type PublicShareView = {
   source: DataSource
 }
 
+export type CreateTripInput = {
+  title: string
+  destination: string
+  startDate: string
+  endDate?: string
+  status: TripStatus
+  primaryCityId?: string
+  notes?: string
+  travelers?: number
+}
+
+export type UpdateTripInput = CreateTripInput & {
+  id: string
+}
+
+type TripWritePayload = {
+  title: string
+  destination: string
+  start_date: string | null
+  end_date: string | null
+  date: string | null
+  status: TripStatus
+  primary_city_id: string | null
+  notes: string | null
+  travelers: string[]
+}
+
 const defaultCityImage = "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80"
 const defaultActivityImage = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80"
+const tripSelectColumns =
+  "id,user_id,trip_number,origin,destination,travel_mode,date,time,title,start_date,end_date,primary_city_id,notes,travelers,total_expenses,status,is_public,share_id,share_enabled_at,share_expires_at,public_show_overview,public_show_itinerary,public_show_expenses,public_show_packing,public_show_journal,metadata,lock_version,created_at,updated_at"
 
 export const demoDashboard: DashboardData = {trips: mockTrips, cities: mockCities, source: "demo"}
 export const demoCatalog: CatalogData = {cities: mockCities, activities: mockActivities, source: "demo"}
@@ -162,10 +191,10 @@ export async function getTripBundle(tripId?: string): Promise<TripBundle> {
     trip,
     trips,
     activities: activitiesResult.data.length ? activitiesResult.data : mockActivities,
-    itinerarySections: itineraryResult.data.length ? itineraryResult.data : mockItinerarySections,
-    packingGroups: packingResult.data.length ? packingResult.data : mockPackingGroups,
-    journalEntries: journalResult.data.length ? journalResult.data : mockJournalEntries,
-    expenseLines: expenseResult.data.length ? expenseResult.data : mockExpenseLines,
+    itinerarySections: itineraryResult.data,
+    packingGroups: packingResult.data,
+    journalEntries: journalResult.data,
+    expenseLines: expenseResult.data,
     source: "supabase",
   }
 }
@@ -242,19 +271,78 @@ export async function listTrips(): Promise<DataResult<Trip[]>> {
     return {data: mockTrips, source: "demo", error: "Supabase env is not configured"}
   }
 
-  const {data, error} = await supabase
-    .from("trips")
-    .select(
-      "id,user_id,trip_number,origin,destination,travel_mode,date,time,title,start_date,end_date,primary_city_id,notes,travelers,total_expenses,status,is_public,share_id,share_enabled_at,share_expires_at,public_show_overview,public_show_itinerary,public_show_expenses,public_show_packing,public_show_journal,metadata,lock_version,created_at,updated_at",
-    )
-    .order("start_date", {ascending: true, nullsFirst: false})
+  const {data, error} = await supabase.from("trips").select(tripSelectColumns).order("start_date", {ascending: true, nullsFirst: false})
 
   const rows = data as TripRow[] | null
-  if (error || !rows?.length) {
-    return {data: mockTrips, source: "demo", error: error?.message ?? "No authenticated trips returned"}
+  if (error) {
+    return {data: [], source: "supabase", error: error.message}
   }
 
-  return {data: rows.map(mapTripRow), source: "supabase", error: null}
+  return {data: (rows ?? []).map(mapTripRow), source: "supabase", error: null}
+}
+
+export async function createTrip(input: CreateTripInput): Promise<DataResult<Trip>> {
+  if (!supabase) {
+    return {data: mockTrips[0], source: "demo", error: "Supabase env is not configured"}
+  }
+
+  const userId = await requireUserId()
+
+  const {data, error} = await supabase
+    .from("trips")
+    .insert({
+      user_id: userId,
+      ...tripWritePayload(input),
+      metadata: {},
+    })
+    .select(tripSelectColumns)
+    .single()
+
+  if (error) {
+    return {data: mockTrips[0], source: "supabase", error: error.message}
+  }
+
+  const trip = mapTripRow(data as TripRow)
+  await ensureItineraryDaysForTrip(trip.id, input.startDate, input.endDate ?? input.startDate, input.primaryCityId)
+  return {data: trip, source: "supabase", error: null}
+}
+
+export async function updateTrip(input: UpdateTripInput): Promise<DataResult<Trip>> {
+  if (!supabase) {
+    return {data: mockTrips[0], source: "demo", error: "Supabase env is not configured"}
+  }
+
+  await requireUserId()
+
+  const {data, error} = await supabase
+    .from("trips")
+    .update(tripWritePayload(input))
+    .eq("id", input.id)
+    .select(tripSelectColumns)
+    .single()
+
+  if (error) {
+    return {data: mockTrips[0], source: "supabase", error: error.message}
+  }
+
+  const trip = mapTripRow(data as TripRow)
+  await ensureItineraryDaysForTrip(trip.id, input.startDate, input.endDate ?? input.startDate, input.primaryCityId)
+  return {data: trip, source: "supabase", error: null}
+}
+
+export async function deleteTrip(tripId: string): Promise<DataResult<{id: string}>> {
+  if (!supabase) {
+    return {data: {id: tripId}, source: "demo", error: "Supabase env is not configured"}
+  }
+
+  await requireUserId()
+
+  const {error} = await supabase.from("trips").delete().eq("id", tripId)
+  if (error) {
+    return {data: {id: tripId}, source: "supabase", error: error.message}
+  }
+
+  return {data: {id: tripId}, source: "supabase", error: null}
 }
 
 export async function listCities(): Promise<DataResult<CityOption[]>> {
@@ -309,12 +397,12 @@ async function listItinerarySections(tripId: string): Promise<DataResult<Itinera
   const days = dayData as ItineraryDayRow[] | null
   const items = itemData as ItineraryItemRow[] | null
 
-  if (dayError || itemError || !days?.length) {
-    return {data: mockItinerarySections, source: "demo", error: dayError?.message ?? itemError?.message ?? "No itinerary returned"}
+  if (dayError || itemError) {
+    return {data: [], source: "supabase", error: dayError?.message ?? itemError?.message ?? "No itinerary returned"}
   }
 
   return {
-    data: days.map((day) => {
+    data: (days ?? []).map((day) => {
       const dayItems = (items ?? []).filter((item) => item.day_id === day.id)
       return {
         id: day.id,
@@ -338,12 +426,12 @@ async function listPackingGroups(tripId: string): Promise<DataResult<PackingGrou
 
   const {data, error} = await supabase.from("packing_items").select("*").eq("trip_id", tripId).order("sort_order")
   const rows = data as PackingItemRow[] | null
-  if (error || !rows?.length) {
-    return {data: mockPackingGroups, source: "demo", error: error?.message ?? "No packing items returned"}
+  if (error) {
+    return {data: [], source: "supabase", error: error.message}
   }
 
   const grouped = new Map<string, PackingGroup["items"]>()
-  rows.forEach((row) => {
+  ;(rows ?? []).forEach((row) => {
     grouped.set(row.category, [...(grouped.get(row.category) ?? []), {name: row.name, packed: row.is_packed}])
   })
 
@@ -357,12 +445,12 @@ async function listJournalEntries(tripId: string): Promise<DataResult<JournalEnt
 
   const {data, error} = await supabase.from("journal_entries").select("*").eq("trip_id", tripId).order("entry_date")
   const rows = data as JournalEntryRow[] | null
-  if (error || !rows?.length) {
-    return {data: mockJournalEntries, source: "demo", error: error?.message ?? "No journal entries returned"}
+  if (error) {
+    return {data: [], source: "supabase", error: error.message}
   }
 
   return {
-    data: rows.map((row) => ({
+    data: (rows ?? []).map((row) => ({
       id: row.id,
       title: row.title,
       body: row.body ?? "",
@@ -381,12 +469,12 @@ async function listExpenseLines(tripId: string): Promise<DataResult<ExpenseLine[
 
   const {data, error} = await supabase.from("expenses").select("*").eq("trip_id", tripId).order("date")
   const rows = data as ExpenseRow[] | null
-  if (error || !rows?.length) {
-    return {data: mockExpenseLines, source: "demo", error: error?.message ?? "No expenses returned"}
+  if (error) {
+    return {data: [], source: "supabase", error: error.message}
   }
 
   return {
-    data: rows.map((row) => ({
+    data: (rows ?? []).map((row) => ({
       id: row.id,
       category: row.category,
       description: row.description,
@@ -397,6 +485,79 @@ async function listExpenseLines(tripId: string): Promise<DataResult<ExpenseLine[
     source: "supabase",
     error: null,
   }
+}
+
+async function requireUserId(): Promise<string> {
+  if (!supabase) throw new Error("Supabase env is not configured")
+
+  const {data, error} = await supabase.auth.getUser()
+  if (error) throw error
+  if (!data.user) throw new Error("You must be signed in to change trips")
+  return data.user.id
+}
+
+function tripWritePayload(input: CreateTripInput): TripWritePayload {
+  const travelerCount = Math.max(input.travelers ?? 1, 1)
+  const startDate = input.startDate || null
+  const endDate = input.endDate || input.startDate || null
+
+  return {
+    title: input.title.trim(),
+    destination: input.destination.trim(),
+    start_date: startDate,
+    end_date: endDate,
+    date: startDate,
+    status: input.status,
+    primary_city_id: input.primaryCityId || null,
+    notes: input.notes?.trim() || null,
+    travelers: Array.from({length: travelerCount}, (_item, index) => `Traveler ${index + 1}`),
+  }
+}
+
+async function ensureItineraryDaysForTrip(
+  tripId: string,
+  startDate: string,
+  endDate: string | undefined,
+  cityId: string | undefined,
+): Promise<string | null> {
+  if (!supabase || !startDate) return null
+
+  const dates = dateRange(startDate, endDate || startDate)
+  if (!dates.length) return null
+
+  const rows = dates.map((date, index) => ({
+    trip_id: tripId,
+    day_number: index + 1,
+    date,
+    city_id: cityId || null,
+    title: `Day ${index + 1}`,
+    sort_order: index + 1,
+    metadata: {},
+  }))
+
+  const {error} = await supabase.from("itinerary_days").upsert(rows, {onConflict: "trip_id,day_number"})
+  return error?.message ?? null
+}
+
+function dateRange(startDate: string, endDate: string): string[] {
+  const start = parseDateOnly(startDate)
+  const end = parseDateOnly(endDate)
+  if (!start || !end || end < start) return []
+
+  const dates: string[] = []
+  const cursor = new Date(start)
+  while (cursor <= end) {
+    dates.push(cursor.toISOString().slice(0, 10))
+    cursor.setUTCDate(cursor.getUTCDate() + 1)
+  }
+  return dates
+}
+
+function parseDateOnly(value: string): Date | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+  if (!match) return null
+  const [, year, month, day] = match
+  return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)))
 }
 
 export function demoPublicShare(shareId?: string): PublicShareView {
