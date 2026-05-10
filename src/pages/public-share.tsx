@@ -3,11 +3,13 @@ import {useParams} from "react-router-dom"
 import {Badge} from "@/components/ui/badge"
 import {Card, CardContent} from "@/components/ui/card"
 import {PageHeader, PageShell} from "@/components/layout/page-shell"
-import {itinerarySections, trips} from "@/data/mock"
+import {useSupabaseQuery} from "@/hooks/use-supabase-query"
+import {demoPublicShare, loadPublicShare} from "@/services/traveloop-api"
 
 export function PublicSharePage() {
   const {shareId} = useParams()
-  const trip = trips.find((item) => item.isPublic) ?? trips[0]
+  const {data} = useSupabaseQuery(`public-share:${shareId ?? "demo"}`, demoPublicShare(shareId), () => loadPublicShare(shareId))
+  const {trip, itinerarySections} = data
 
   return (
     <PageShell>
@@ -55,7 +57,7 @@ export function PublicSharePage() {
             </p>
             <p className="mt-3 flex items-center gap-2 text-sm text-foreground/60">
               <Share2 className="h-4 w-4" />
-              Expenses and private journal entries are hidden.
+              {data.expensesHidden ? "Expenses and private journal entries are hidden." : "Owner-approved expenses are visible."}
             </p>
           </CardContent>
         </Card>

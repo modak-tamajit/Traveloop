@@ -7,7 +7,8 @@ import {PageHeader, PageShell} from "@/components/layout/page-shell"
 import {MetricCard} from "@/components/travel/metric-card"
 import {SectionHeader} from "@/components/travel/section-header"
 import {StatusBadge} from "@/components/travel/status-badge"
-import {trips} from "@/data/mock"
+import {useSupabaseQuery} from "@/hooks/use-supabase-query"
+import {demoTripBundle, getTripBundle} from "@/services/traveloop-api"
 
 export const tripTabs = [
   ["Overview", ""],
@@ -20,7 +21,8 @@ export const tripTabs = [
 
 export function TripDetailPage() {
   const {id} = useParams()
-  const trip = trips.find((item) => item.id === id) ?? trips[0]
+  const {data} = useSupabaseQuery(`trip-detail:${id ?? "demo"}`, demoTripBundle, () => getTripBundle(id))
+  const {trip} = data
 
   return (
     <PageShell>

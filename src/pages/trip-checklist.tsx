@@ -5,12 +5,14 @@ import {Card, CardContent} from "@/components/ui/card"
 import {Progress} from "@/components/ui/progress"
 import {SearchToolbar} from "@/components/travel/search-toolbar"
 import {PageHeader, PageShell} from "@/components/layout/page-shell"
+import {useSupabaseQuery} from "@/hooks/use-supabase-query"
 import {TripTabs} from "@/pages/trip-detail"
-import {packingGroups, trips} from "@/data/mock"
+import {demoTripBundle, getTripBundle} from "@/services/traveloop-api"
 
 export function TripChecklistPage() {
   const {id} = useParams()
-  const trip = trips.find((item) => item.id === id) ?? trips[0]
+  const {data} = useSupabaseQuery(`trip-checklist:${id ?? "demo"}`, demoTripBundle, () => getTripBundle(id))
+  const {packingGroups, trip} = data
   const packed = packingGroups.flatMap((group) => group.items).filter((item) => item.packed).length
   const total = packingGroups.flatMap((group) => group.items).length
 

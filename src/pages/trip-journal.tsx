@@ -5,12 +5,14 @@ import {Card, CardContent} from "@/components/ui/card"
 import {SegmentedTabs, TabButton} from "@/components/ui/tabs"
 import {SearchToolbar} from "@/components/travel/search-toolbar"
 import {PageHeader, PageShell} from "@/components/layout/page-shell"
+import {useSupabaseQuery} from "@/hooks/use-supabase-query"
 import {TripTabs} from "@/pages/trip-detail"
-import {journalEntries, trips} from "@/data/mock"
+import {demoTripBundle, getTripBundle} from "@/services/traveloop-api"
 
 export function TripJournalPage() {
   const {id} = useParams()
-  const trip = trips.find((item) => item.id === id) ?? trips[0]
+  const {data} = useSupabaseQuery(`trip-journal:${id ?? "demo"}`, demoTripBundle, () => getTripBundle(id))
+  const {journalEntries, trip} = data
 
   return (
     <PageShell>

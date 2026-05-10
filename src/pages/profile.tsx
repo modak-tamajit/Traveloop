@@ -4,11 +4,13 @@ import {Card, CardContent} from "@/components/ui/card"
 import {Field, Input, Textarea} from "@/components/ui/input"
 import {PageHeader, PageShell} from "@/components/layout/page-shell"
 import {TripCard} from "@/components/travel/trip-card"
+import {useSupabaseQuery} from "@/hooks/use-supabase-query"
 import {useAuth} from "@/providers/auth-provider"
-import {trips} from "@/data/mock"
+import {demoDashboard, listTrips} from "@/services/traveloop-api"
 
 export function ProfilePage() {
   const {profile} = useAuth()
+  const {data: trips} = useSupabaseQuery("profile-trips", demoDashboard.trips, async () => (await listTrips()).data)
 
   return (
     <PageShell>

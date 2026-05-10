@@ -8,7 +8,8 @@ import {PageHeader, PageShell} from "@/components/layout/page-shell"
 import {ActivityCard} from "@/components/travel/activity-card"
 import {SectionHeader} from "@/components/travel/section-header"
 import {SearchToolbar} from "@/components/travel/search-toolbar"
-import {activities} from "@/data/mock"
+import {useSupabaseQuery} from "@/hooks/use-supabase-query"
+import {demoCatalog, getCatalogData} from "@/services/traveloop-api"
 
 export function AddTripPage() {
   return <TripForm action="Create trip" eyebrow="Create journey" title="Add Trip" />
@@ -17,6 +18,7 @@ export function AddTripPage() {
 export function TripForm({title, eyebrow, action}: {title: string; eyebrow: string; action: string}) {
   const {notify} = useToast()
   const navigate = useNavigate()
+  const {data} = useSupabaseQuery("trip-form-catalog", demoCatalog, getCatalogData)
   const firstTripId = "c1fcd2fb-3d66-4f1f-98cf-6a75d85f6b51"
 
   return (
@@ -93,7 +95,7 @@ export function TripForm({title, eyebrow, action}: {title: string; eyebrow: stri
           />
           <SearchToolbar className="mb-4" placeholder="Search activity or place" />
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {activities.map((activity) => (
+            {data.activities.map((activity) => (
               <ActivityCard activity={activity} key={activity.id} />
             ))}
           </div>

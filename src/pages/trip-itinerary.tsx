@@ -7,12 +7,14 @@ import {PageHeader, PageShell} from "@/components/layout/page-shell"
 import {ActivityCard} from "@/components/travel/activity-card"
 import {SearchToolbar} from "@/components/travel/search-toolbar"
 import {SectionHeader} from "@/components/travel/section-header"
+import {useSupabaseQuery} from "@/hooks/use-supabase-query"
 import {TripTabs} from "@/pages/trip-detail"
-import {activities, itinerarySections, trips} from "@/data/mock"
+import {demoTripBundle, getTripBundle} from "@/services/traveloop-api"
 
 export function TripItineraryPage() {
   const {id} = useParams()
-  const trip = trips.find((item) => item.id === id) ?? trips[0]
+  const {data} = useSupabaseQuery(`trip-itinerary:${id ?? "demo"}`, demoTripBundle, () => getTripBundle(id))
+  const {activities, itinerarySections, trip} = data
 
   return (
     <PageShell>

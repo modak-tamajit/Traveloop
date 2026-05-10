@@ -5,8 +5,9 @@ import {Button} from "@/components/ui/button"
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
 import {Field, Input, Textarea} from "@/components/ui/input"
 import {PageHeader, PageShell} from "@/components/layout/page-shell"
+import {useSupabaseQuery} from "@/hooks/use-supabase-query"
 import {TripTabs} from "@/pages/trip-detail"
-import {itinerarySections, trips} from "@/data/mock"
+import {demoTripBundle, getTripBundle} from "@/services/traveloop-api"
 
 const visibilityOptions = [
   {label: "Overview", description: "Trip title, destination, dates, and cover image.", enabled: true},
@@ -17,7 +18,8 @@ const visibilityOptions = [
 
 export function TripSharePage() {
   const {id} = useParams()
-  const trip = trips.find((item) => item.id === id) ?? trips[0]
+  const {data} = useSupabaseQuery(`trip-share:${id ?? "demo"}`, demoTripBundle, () => getTripBundle(id))
+  const {itinerarySections, trip} = data
   const shareUrl = `https://traveloop.app/share/${trip.id.slice(0, 8)}`
 
   return (

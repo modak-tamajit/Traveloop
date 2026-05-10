@@ -5,12 +5,14 @@ import {Card, CardContent} from "@/components/ui/card"
 import {PageHeader, PageShell} from "@/components/layout/page-shell"
 import {ExpenseCard} from "@/components/travel/expense-card"
 import {SearchToolbar} from "@/components/travel/search-toolbar"
+import {useSupabaseQuery} from "@/hooks/use-supabase-query"
 import {TripTabs} from "@/pages/trip-detail"
-import {expenseLines, trips} from "@/data/mock"
+import {demoTripBundle, getTripBundle} from "@/services/traveloop-api"
 
 export function TripExpensesPage() {
   const {id} = useParams()
-  const trip = trips.find((item) => item.id === id) ?? trips[0]
+  const {data} = useSupabaseQuery(`trip-expenses:${id ?? "demo"}`, demoTripBundle, () => getTripBundle(id))
+  const {expenseLines, trip} = data
   const subtotal = expenseLines.reduce((sum, line) => sum + line.amount, 0)
   const tax = 1050
   const discount = 50

@@ -6,16 +6,18 @@ import {Card, CardContent} from "@/components/ui/card"
 import {PageHeader, PageShell} from "@/components/layout/page-shell"
 import {SearchToolbar} from "@/components/travel/search-toolbar"
 import {StatusBadge} from "@/components/travel/status-badge"
-import {trips} from "@/data/mock"
+import {useSupabaseQuery} from "@/hooks/use-supabase-query"
+import {demoDashboard, listTrips} from "@/services/traveloop-api"
 import type {Trip} from "@/types"
 
-const tripGroups = [
-  {label: "Ongoing", items: trips.filter((trip) => trip.status === "active")},
-  {label: "Upcoming", items: trips.filter((trip) => trip.status === "planned" || trip.status === "draft")},
-  {label: "Completed", items: [trips[1]]},
-]
-
 export function TripListingPage() {
+  const {data: trips} = useSupabaseQuery("trip-listing", demoDashboard.trips, async () => (await listTrips()).data)
+  const tripGroups = [
+    {label: "Ongoing", items: trips.filter((trip) => trip.status === "active")},
+    {label: "Upcoming", items: trips.filter((trip) => trip.status === "planned" || trip.status === "draft")},
+    {label: "Completed", items: trips.filter((trip) => trip.status === "completed")},
+  ]
+
   return (
     <PageShell>
       <PageHeader

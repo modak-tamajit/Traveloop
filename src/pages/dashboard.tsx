@@ -7,9 +7,12 @@ import {MetricCard} from "@/components/travel/metric-card"
 import {SearchToolbar} from "@/components/travel/search-toolbar"
 import {SectionHeader} from "@/components/travel/section-header"
 import {TripCard} from "@/components/travel/trip-card"
-import {cities, trips} from "@/data/mock"
+import {useSupabaseQuery} from "@/hooks/use-supabase-query"
+import {demoDashboard, getDashboardData} from "@/services/traveloop-api"
 
 export function DashboardPage() {
+  const {data} = useSupabaseQuery("dashboard", demoDashboard, getDashboardData)
+  const {cities, trips} = data
   const publicTrips = trips.filter((trip) => trip.isPublic).length
   const totalBudget = trips.reduce((sum, trip) => sum + (trip.budget ?? 0), 0)
 

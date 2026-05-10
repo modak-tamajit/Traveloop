@@ -4,11 +4,13 @@ import {Button} from "@/components/ui/button"
 import {Card, CardContent} from "@/components/ui/card"
 import {PageHeader, PageShell} from "@/components/layout/page-shell"
 import {SearchToolbar} from "@/components/travel/search-toolbar"
-import {activities, cities} from "@/data/mock"
+import {useSupabaseQuery} from "@/hooks/use-supabase-query"
+import {demoCatalog, getCatalogData} from "@/services/traveloop-api"
 
 export function SearchPage() {
+  const {data} = useSupabaseQuery("catalog-search", demoCatalog, getCatalogData)
   const results = [
-    ...activities.map((activity) => ({
+    ...data.activities.map((activity) => ({
       id: activity.id,
       title: activity.name,
       label: activity.category,
@@ -17,7 +19,7 @@ export function SearchPage() {
       image: activity.imageUrl,
       kind: "Activity",
     })),
-    ...cities.map((city) => ({
+    ...data.cities.map((city) => ({
       id: city.id,
       title: city.name,
       label: city.country,
