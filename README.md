@@ -362,23 +362,6 @@ Tiny rituals repeated endlessly by developers until retirement or burnout. Somet
 
 ---
 
-# 📸 Screenshots
-
-## Home Page
-_Add screenshot here_
-
----
-
-## Dashboard
-_Add screenshot here_
-
----
-
-## Trip Planner
-_Add screenshot here_
-
----
-
 # 👨‍💻 Developers
 
 - Developer 1 → Frontend & UI
