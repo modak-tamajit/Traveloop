@@ -1,5 +1,5 @@
 import {useState} from "react"
-import {ArrowRight, Camera, Compass, LockKeyhole, MapPin, Plane, UserPlus} from "lucide-react"
+import {ArrowRight, Camera, LockKeyhole, MapPin, Plane, UserPlus} from "lucide-react"
 import {useLocation, useNavigate} from "react-router-dom"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent} from "@/components/ui/card"
@@ -129,9 +129,7 @@ export function WelcomePage() {
           <div className="relative flex min-h-[620px] flex-col justify-between p-6 text-white sm:p-8">
             <nav className="flex items-center justify-between">
               <div className="flex items-center gap-3 text-xl font-bold">
-                <span className="grid h-11 w-11 place-items-center rounded-xl bg-white/15 backdrop-blur">
-                  <Compass className="h-6 w-6" />
-                </span>
+                <img src="/logo.png" alt="Traveloop" className="h-11 w-11 rounded-xl object-contain bg-white/15 backdrop-blur p-1" />
                 Traveloop
               </div>
               <Button className="border-white/25 bg-white/12 text-white hover:bg-white/20" onClick={openAuthenticatedApp} variant="outline">

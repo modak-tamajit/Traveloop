@@ -1,4 +1,4 @@
-import {BarChart3, Compass, Home, LogOut, Menu, Moon, Plus, Search, Settings, Sun, Users, User, X} from "lucide-react"
+import {BarChart3, Home, LogOut, Menu, Moon, Plus, Search, Settings, Sun, Users, User, X} from "lucide-react"
 import type {LucideIcon} from "lucide-react"
 import {useState} from "react"
 import {NavLink} from "react-router-dom"
@@ -29,9 +29,7 @@ export function AppNav() {
       <header className="sticky top-0 z-40 border-b border-border bg-background/86 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <NavLink className="flex items-center gap-3 font-bold" to="/dashboard">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground shadow-soft">
-              <Compass className="h-5 w-5" />
-            </span>
+            <img src="/logo.png" alt="Traveloop" className="h-10 w-10 rounded-xl object-contain shadow-soft" />
             <span className="tracking-tight">Traveloop</span>
           </NavLink>
           <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary navigation">
@@ -82,9 +80,7 @@ export function AppNav() {
           <aside className="page-enter ml-auto flex h-full w-full max-w-sm flex-col border-l border-border bg-card p-4 shadow-lift">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 font-bold">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground">
-                  <Compass className="h-5 w-5" />
-                </span>
+                <img src="/logo.png" alt="Traveloop" className="h-10 w-10 rounded-xl object-contain" />
                 Traveloop
               </div>
               <Button aria-label="Close menu" onClick={() => setOpen(false)} size="icon" variant="ghost">
